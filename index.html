@@ -63,10 +63,6 @@
             background: #dc3545;
             color: white;
         }
-        .full {
-            background: #0d6efd;
-            color: white;
-        }
         .hidden {
             display: none;
         }
@@ -91,8 +87,6 @@
         <button class="start" onclick="startTimer()">START</button>
         <button class="pause" onclick="pauseTimer()">PAUSE</button>
         <button class="reset" onclick="resetTimer()">RESET</button>
-        <br>
-        <button class="full" onclick="goFullscreen()">VOLLBILD</button>
     </div>
     <script>
         let phase = "work";
@@ -200,15 +194,6 @@
             seconds = parseInt(work.value);
             document.getElementById("settings").classList.remove("hidden");
             update();
-        }
-        
-        function goFullscreen() {
-            let e = document.documentElement;
-            if(e.requestFullscreen) {
-                e.requestFullscreen();
-            } else if(e.webkitRequestFullscreen) {
-                e.webkitRequestFullscreen();
-            }
         }
         
         seconds = parseInt(work.value);
