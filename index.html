@@ -94,6 +94,7 @@
         let round = 1;
         let running = false;
         let timer = null;
+        let wakeLock = null;
         
         const work = document.getElementById("work");
         const rest = document.getElementById("rest");
@@ -124,6 +125,23 @@
         function buzz() {
             if(navigator.vibrate) {
                 navigator.vibrate(300);
+            }
+        }
+        
+        async function keepScreenOn() {
+            try {
+                if("wakeLock" in navigator) {
+                    wakeLock = await navigator.wakeLock.request("screen");
+                }
+            } catch(err) {
+                console.log("Wake Lock nicht verfügbar");
+            }
+        }
+        
+        function releaseScreenLock() {
+            if(wakeLock !== null) {
+                wakeLock.release();
+                wakeLock = null;
             }
         }
         
@@ -171,6 +189,7 @@
             if(running) return;
             save();
             running = true;
+            keepScreenOn();
             document.getElementById("settings").classList.add("hidden");
             seconds = parseInt(seconds);
             update();
@@ -189,6 +208,7 @@
         
         function resetTimer() {
             stopTimer();
+            releaseScreenLock();
             phase = "work";
             round = 1;
             seconds = parseInt(work.value);
