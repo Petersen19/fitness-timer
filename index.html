@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Timer</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #111;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 95%;
+            text-align: center;
+        }
+        h1 {
+            font-size: 32px;
+        }
+        .settings {
+            background: #222;
+            padding: 15px;
+            border-radius: 15px;
+        }
+        input {
+            width: 80px;
+            font-size: 22px;
+            text-align: center;
+            padding: 8px;
+        }
+        #phase {
+            font-size: 42px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        #timer {
+            font-size: 120px;
+            font-weight: bold;
+        }
+        #round {
+            font-size: 30px;
+        }
+        button {
+            font-size: 22px;
+            padding: 15px 25px;
+            margin: 8px;
+            border-radius: 12px;
+            border: 0;
+        }
+        .start {
+            background: #198754;
+            color: white;
+        }
+        .pause {
+            background: #ffc107;
+        }
+        .reset {
+            background: #dc3545;
+            color: white;
+        }
+        .full {
+            background: #0d6efd;
+            color: white;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fitness Timer</h1>
+        <div id="settings" class="settings">
+            Belastung Sekunden<br>
+            <input id="work" value="20" type="number">
+            <br><br>
+            Pause Sekunden<br>
+            <input id="rest" value="45" type="number">
+            <br><br>
+            Runden<br>
+            <input id="rounds" value="20" type="number">
+        </div>
+        <div id="phase">BEREIT</div>
+        <div id="timer">20</div>
+        <div id="round">Runde 1 / 20</div>
+        <button class="start" onclick="startTimer()">START</button>
+        <button class="pause" onclick="pauseTimer()">PAUSE</button>
+        <button class="reset" onclick="resetTimer()">RESET</button>
+        <br>
+        <button class="full" onclick="goFullscreen()">VOLLBILD</button>
+    </div>
+    <script>
+        let phase = "work";
+        let seconds = 20;
+        let round = 1;
+        let running = false;
+        let timer = null;
+        
+        const work = document.getElementById("work");
+        const rest = document.getElementById("rest");
+        const rounds = document.getElementById("rounds");
+        
+        function save() {
+            localStorage.setItem("work", work.value);
+            localStorage.setItem("rest", rest.value);
+            localStorage.setItem("rounds", rounds.value);
+        }
+        
+        function load() {
+            if(localStorage.work) work.value = localStorage.work;
+            if(localStorage.rest) rest.value = localStorage.rest;
+            if(localStorage.rounds) rounds.value = localStorage.rounds;
+        }
+        
+        load();
+        
+        function say(text) {
+            if("speechSynthesis" in window) {
+                let s = new SpeechSynthesisUtterance(text);
+                s.lang = "de-DE";
+                speechSynthesis.speak(s);
+            }
+        }
+        
+        function buzz() {
+            if(navigator.vibrate) {
+                navigator.vibrate(300);
+            }
+        }
+        
+        function update() {
+            document.getElementById("timer").innerHTML = seconds;
+            document.getElementById("round").innerHTML = "Runde " + round + " / " + rounds.value;
+            
+            if(phase === "work") {
+                document.body.style.background = "#198754";
+                document.getElementById("phase").innerHTML = "BELASTUNG";
+            } else {
+                document.body.style.background = "#b02a37";
+                document.getElementById("phase").innerHTML = "PAUSE";
+            }
+        }
+        
+        function countDown() {
+            seconds--;
+            if(seconds <= 5 && seconds > 0) {
+                say(seconds);
+            }
+            if(seconds <= 0) {
+                buzz();
+                if(phase === "work") {
+                    phase = "rest";
+                    seconds = parseInt(rest.value);
+                    say("Pause");
+                } else {
+                    if(round >= parseInt(rounds.value)) {
+                        stopTimer();
+                        say("Training beendet");
+                        document.getElementById("phase").innerHTML = "FERTIG";
+                        return;
+                    }
+                    round++;
+                    phase = "work";
+                    seconds = parseInt(work.value);
+                    say("Los");
+                }
+            }
+            update();
+        }
+        
+        function startTimer() {
+            if(running) return;
+            save();
+            running = true;
+            document.getElementById("settings").classList.add("hidden");
+            seconds = parseInt(seconds);
+            update();
+            timer = setInterval(countDown, 1000);
+        }
+        
+        function pauseTimer() {
+            running = false;
+            clearInterval(timer);
+        }
+        
+        function stopTimer() {
+            running = false;
+            clearInterval(timer);
+        }
+        
+        function resetTimer() {
+            stopTimer();
+            phase = "work";
+            round = 1;
+            seconds = parseInt(work.value);
+            document.getElementById("settings").classList.remove("hidden");
+            update();
+        }
+        
+        function goFullscreen() {
+            let e = document.documentElement;
+            if(e.requestFullscreen) {
+                e.requestFullscreen();
+            } else if(e.webkitRequestFullscreen) {
+                e.webkitRequestFullscreen();
+            }
+        }
+        
+        seconds = parseInt(work.value);
+        update();
+    </script>
+</body>
+</html>
