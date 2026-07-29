@@ -33,6 +33,25 @@
             text-align: center;
             padding: 8px;
         }
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            display: none;
+        }
+        .header h2 {
+            font-size: 28px;
+            margin: 5px 0;
+            font-family: Arial, sans-serif;
+        }
+        .header p {
+            font-size: 20px;
+            margin: 5px 0;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
         #phase {
             font-size: 42px;
             font-weight: bold;
@@ -69,6 +88,10 @@
     </style>
 </head>
 <body>
+    <div class="header" id="header">
+        <h2>Fitness Timer</h2>
+        <p>Petersen19</p>
+    </div>
     <div class="container">
         <h1>Fitness Timer</h1>
         <div id="settings" class="settings">
@@ -101,6 +124,7 @@
         const work = document.getElementById("work");
         const rest = document.getElementById("rest");
         const rounds = document.getElementById("rounds");
+        const header = document.getElementById("header");
         
         function save() {
             localStorage.setItem("work", work.value);
@@ -218,6 +242,7 @@
             save();
             running = true;
             keepScreenOn();
+            header.style.display = "block";
             document.getElementById("settings").classList.add("hidden");
             inCountdown = true;
             countdownSeconds = 30;
@@ -242,6 +267,7 @@
             round = 1;
             seconds = parseInt(work.value);
             inCountdown = false;
+            header.style.display = "none";
             document.getElementById("settings").classList.remove("hidden");
             update();
         }
