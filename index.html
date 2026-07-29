@@ -95,6 +95,8 @@
         let running = false;
         let timer = null;
         let wakeLock = null;
+        let inCountdown = false;
+        let countdownSeconds = 30;
         
         const work = document.getElementById("work");
         const rest = document.getElementById("rest");
@@ -158,6 +160,32 @@
             }
         }
         
+        function updateCountdown() {
+            document.getElementById("timer").innerHTML = countdownSeconds;
+            document.getElementById("phase").innerHTML = "VORBEREITUNG";
+            document.getElementById("round").innerHTML = "Training startet in...";
+            document.body.style.background = "#0d6efd";
+        }
+        
+        function countdownTick() {
+            countdownSeconds--;
+            if(countdownSeconds > 0) {
+                if(countdownSeconds <= 5) {
+                    say(countdownSeconds);
+                }
+                updateCountdown();
+            } else {
+                clearInterval(timer);
+                inCountdown = false;
+                buzz();
+                say("Los");
+                phase = "work";
+                seconds = parseInt(work.value);
+                update();
+                timer = setInterval(countDown, 1000);
+            }
+        }
+        
         function countDown() {
             seconds--;
             if(seconds <= 5 && seconds > 0) {
@@ -191,9 +219,10 @@
             running = true;
             keepScreenOn();
             document.getElementById("settings").classList.add("hidden");
-            seconds = parseInt(seconds);
-            update();
-            timer = setInterval(countDown, 1000);
+            inCountdown = true;
+            countdownSeconds = 30;
+            updateCountdown();
+            timer = setInterval(countdownTick, 1000);
         }
         
         function pauseTimer() {
@@ -212,6 +241,7 @@
             phase = "work";
             round = 1;
             seconds = parseInt(work.value);
+            inCountdown = false;
             document.getElementById("settings").classList.remove("hidden");
             update();
         }
