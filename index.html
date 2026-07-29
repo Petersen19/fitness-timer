@@ -19,24 +19,9 @@
             width: 95%;
             text-align: center;
         }
-        .settings {
-            background: #222;
-            padding: 15px;
-            border-radius: 15px;
-        }
-        input {
-            width: 80px;
-            font-size: 22px;
-            text-align: center;
-            padding: 8px;
-        }
         .header {
-            position: absolute;
-            top: 20px;
-            left: 0;
-            right: 0;
             text-align: center;
-            display: none;
+            margin-bottom: 30px;
         }
         .header h2 {
             font-size: 28px;
@@ -44,6 +29,37 @@
             font-family: Arial, sans-serif;
         }
         .header p {
+            font-size: 20px;
+            margin: 5px 0;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+        .settings {
+            background: #222;
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+        input {
+            width: 80px;
+            font-size: 22px;
+            text-align: center;
+            padding: 8px;
+        }
+        .training-header {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            display: none;
+        }
+        .training-header h2 {
+            font-size: 28px;
+            margin: 5px 0;
+            font-family: Arial, sans-serif;
+        }
+        .training-header p {
             font-size: 20px;
             margin: 5px 0;
             font-family: 'Courier New', monospace;
@@ -85,11 +101,15 @@
     </style>
 </head>
 <body>
-    <div class="header" id="header">
+    <div class="training-header" id="trainingHeader">
         <h2>Fitness Timer</h2>
         <p>by Petersen19</p>
     </div>
     <div class="container">
+        <div class="header" id="mainHeader">
+            <h2>Fitness Timer</h2>
+            <p>by Petersen19</p>
+        </div>
         <div id="settings" class="settings">
             Belastung Sekunden<br>
             <input id="work" value="20" type="number">
@@ -100,12 +120,12 @@
             Runden<br>
             <input id="rounds" value="20" type="number">
         </div>
-        <div id="phase">BEREIT</div>
-        <div id="timer">20</div>
-        <div id="round">Runde 1 / 20</div>
+        <div id="phase" class="hidden">BEREIT</div>
+        <div id="timer" class="hidden">20</div>
+        <div id="round" class="hidden">Runde 1 / 20</div>
         <button class="start" id="startBtn" onclick="startTimer()">START</button>
-        <button class="pause" onclick="pauseTimer()">PAUSE</button>
-        <button class="reset" onclick="resetTimer()">RESET</button>
+        <button class="pause hidden" id="pauseBtn" onclick="pauseTimer()">PAUSE</button>
+        <button class="reset hidden" id="resetBtn" onclick="resetTimer()">RESET</button>
     </div>
     <script>
         let phase = "work";
@@ -120,8 +140,11 @@
         const work = document.getElementById("work");
         const rest = document.getElementById("rest");
         const rounds = document.getElementById("rounds");
-        const header = document.getElementById("header");
+        const trainingHeader = document.getElementById("trainingHeader");
+        const mainHeader = document.getElementById("mainHeader");
         const startBtn = document.getElementById("startBtn");
+        const pauseBtn = document.getElementById("pauseBtn");
+        const resetBtn = document.getElementById("resetBtn");
         
         function save() {
             localStorage.setItem("work", work.value);
@@ -240,8 +263,14 @@
             running = true;
             keepScreenOn();
             startBtn.classList.add("hidden");
-            header.style.display = "block";
+            pauseBtn.classList.remove("hidden");
+            resetBtn.classList.remove("hidden");
+            trainingHeader.style.display = "block";
+            mainHeader.classList.add("hidden");
             document.getElementById("settings").classList.add("hidden");
+            document.getElementById("phase").classList.remove("hidden");
+            document.getElementById("timer").classList.remove("hidden");
+            document.getElementById("round").classList.remove("hidden");
             inCountdown = true;
             countdownSeconds = 30;
             updateCountdown();
@@ -266,8 +295,14 @@
             seconds = parseInt(work.value);
             inCountdown = false;
             startBtn.classList.remove("hidden");
-            header.style.display = "none";
+            pauseBtn.classList.add("hidden");
+            resetBtn.classList.add("hidden");
+            trainingHeader.style.display = "none";
+            mainHeader.classList.remove("hidden");
             document.getElementById("settings").classList.remove("hidden");
+            document.getElementById("phase").classList.add("hidden");
+            document.getElementById("timer").classList.add("hidden");
+            document.getElementById("round").classList.add("hidden");
             update();
         }
         
