@@ -107,7 +107,7 @@
         <div id="phase">BEREIT</div>
         <div id="timer">20</div>
         <div id="round">Runde 1 / 20</div>
-        <button class="start" onclick="startTimer()">START</button>
+        <button class="start" id="startBtn" onclick="startTimer()">START</button>
         <button class="pause" onclick="pauseTimer()">PAUSE</button>
         <button class="reset" onclick="resetTimer()">RESET</button>
     </div>
@@ -125,6 +125,7 @@
         const rest = document.getElementById("rest");
         const rounds = document.getElementById("rounds");
         const header = document.getElementById("header");
+        const startBtn = document.getElementById("startBtn");
         
         function save() {
             localStorage.setItem("work", work.value);
@@ -242,6 +243,7 @@
             save();
             running = true;
             keepScreenOn();
+            startBtn.classList.add("hidden");
             header.style.display = "block";
             document.getElementById("settings").classList.add("hidden");
             inCountdown = true;
@@ -267,6 +269,7 @@
             round = 1;
             seconds = parseInt(work.value);
             inCountdown = false;
+            startBtn.classList.remove("hidden");
             header.style.display = "none";
             document.getElementById("settings").classList.remove("hidden");
             update();
