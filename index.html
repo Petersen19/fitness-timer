@@ -74,7 +74,7 @@
             font-size: 120px;
             font-weight: bold;
         }
-        #round {
+        #info {
             font-size: 30px;
         }
         button {
@@ -119,18 +119,25 @@
             <br><br>
             Wiederholungen<br>
             <input id="rounds" value="20" type="number">
+            <br><br>
+            Sätze<br>
+            <input id="sets" value="3" type="number">
+            <br><br>
+            Satzpause Sekunden<br>
+            <input id="setPause" value="60" type="number">
         </div>
         <div id="phase" class="hidden">BEREIT</div>
         <div id="timer" class="hidden">20</div>
-        <div id="round" class="hidden">Wiederholung 1 / 20</div>
+        <div id="info" class="hidden">Wiederholung 1 / 20 | Satz 1 / 3</div>
         <button class="start" id="startBtn" onclick="startTimer()">START</button>
         <button class="pause hidden" id="pauseBtn" onclick="pauseTimer()">PAUSE</button>
         <button class="reset hidden" id="resetBtn" onclick="resetTimer()">RESET</button>
     </div>
     <script>
-        let phase = "work";
+        let phase = "work"; // work, rest, setpause
         let seconds = 20;
         let round = 1;
+        let set = 1;
         let running = false;
         let timer = null;
         let wakeLock = null;
@@ -140,6 +147,8 @@
         const work = document.getElementById("work");
         const rest = document.getElementById("rest");
         const rounds = document.getElementById("rounds");
+        const sets = document.getElementById("sets");
+        const setPause = document.getElementById("setPause");
         const trainingHeader = document.getElementById("trainingHeader");
         const mainHeader = document.getElementById("mainHeader");
         const startBtn = document.getElementById("startBtn");
@@ -150,12 +159,16 @@
             localStorage.setItem("work", work.value);
             localStorage.setItem("rest", rest.value);
             localStorage.setItem("rounds", rounds.value);
+            localStorage.setItem("sets", sets.value);
+            localStorage.setItem("setPause", setPause.value);
         }
         
         function load() {
             if(localStorage.work) work.value = localStorage.work;
             if(localStorage.rest) rest.value = localStorage.rest;
             if(localStorage.rounds) rounds.value = localStorage.rounds;
+            if(localStorage.sets) sets.value = localStorage.sets;
+            if(localStorage.setPause) setPause.value = localStorage.setPause;
         }
         
         load();
@@ -193,21 +206,24 @@
         
         function update() {
             document.getElementById("timer").innerHTML = seconds;
-            document.getElementById("round").innerHTML = "Wiederholung " + round + " / " + rounds.value;
+            document.getElementById("info").innerHTML = "Wiederholung " + round + " / " + rounds.value + " | Satz " + set + " / " + sets.value;
             
             if(phase === "work") {
                 document.body.style.background = "#198754";
                 document.getElementById("phase").innerHTML = "ÜBUNGSDAUER";
-            } else {
+            } else if(phase === "rest") {
                 document.body.style.background = "#b02a37";
                 document.getElementById("phase").innerHTML = "PAUSE";
+            } else if(phase === "setpause") {
+                document.body.style.background = "#ff6900";
+                document.getElementById("phase").innerHTML = "SATZPAUSE";
             }
         }
         
         function updateCountdown() {
             document.getElementById("timer").innerHTML = countdownSeconds;
             document.getElementById("phase").innerHTML = "VORBEREITUNG";
-            document.getElementById("round").innerHTML = "Training startet in...";
+            document.getElementById("info").innerHTML = "Training startet in...";
             document.body.style.background = "#0d6efd";
         }
         
@@ -238,17 +254,37 @@
             if(seconds <= 0) {
                 buzz();
                 if(phase === "work") {
-                    phase = "rest";
-                    seconds = parseInt(rest.value);
-                    say("Pause");
-                } else {
+                    // Nach Übungsdauer: Pause oder Satzpause?
                     if(round >= parseInt(rounds.value)) {
-                        stopTimer();
-                        say("Training beendet");
-                        document.getElementById("phase").innerHTML = "FERTIG";
-                        return;
+                        // Satz fertig
+                        if(set >= parseInt(sets.value)) {
+                            // Alle Sätze fertig
+                            stopTimer();
+                            say("Training beendet");
+                            document.getElementById("phase").innerHTML = "FERTIG";
+                            return;
+                        } else {
+                            // Satzpause
+                            phase = "setpause";
+                            seconds = parseInt(setPause.value);
+                            say("Satzpause");
+                            round = 1;
+                        }
+                    } else {
+                        // Nächste Wiederholung
+                        phase = "rest";
+                        seconds = parseInt(rest.value);
+                        say("Pause");
                     }
+                } else if(phase === "rest") {
+                    // Nach Pause: nächste Wiederholung
                     round++;
+                    phase = "work";
+                    seconds = parseInt(work.value);
+                    say("Los");
+                } else if(phase === "setpause") {
+                    // Nach Satzpause: nächster Satz
+                    set++;
                     phase = "work";
                     seconds = parseInt(work.value);
                     say("Los");
@@ -270,7 +306,7 @@
             document.getElementById("settings").classList.add("hidden");
             document.getElementById("phase").classList.remove("hidden");
             document.getElementById("timer").classList.remove("hidden");
-            document.getElementById("round").classList.remove("hidden");
+            document.getElementById("info").classList.remove("hidden");
             inCountdown = true;
             countdownSeconds = 30;
             updateCountdown();
@@ -292,6 +328,7 @@
             releaseScreenLock();
             phase = "work";
             round = 1;
+            set = 1;
             seconds = parseInt(work.value);
             inCountdown = false;
             startBtn.classList.remove("hidden");
@@ -302,7 +339,7 @@
             document.getElementById("settings").classList.remove("hidden");
             document.getElementById("phase").classList.add("hidden");
             document.getElementById("timer").classList.add("hidden");
-            document.getElementById("round").classList.add("hidden");
+            document.getElementById("info").classList.add("hidden");
             update();
         }
         
