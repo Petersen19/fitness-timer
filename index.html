@@ -111,18 +111,18 @@
             <p>by Petersen19</p>
         </div>
         <div id="settings" class="settings">
-            Belastung Sekunden<br>
+            Übungsdauer Sekunden<br>
             <input id="work" value="20" type="number">
             <br><br>
             Pause Sekunden<br>
             <input id="rest" value="45" type="number">
             <br><br>
-            Runden<br>
+            Wiederholungen<br>
             <input id="rounds" value="20" type="number">
         </div>
         <div id="phase" class="hidden">BEREIT</div>
         <div id="timer" class="hidden">20</div>
-        <div id="round" class="hidden">Runde 1 / 20</div>
+        <div id="round" class="hidden">Wiederholung 1 / 20</div>
         <button class="start" id="startBtn" onclick="startTimer()">START</button>
         <button class="pause hidden" id="pauseBtn" onclick="pauseTimer()">PAUSE</button>
         <button class="reset hidden" id="resetBtn" onclick="resetTimer()">RESET</button>
@@ -193,11 +193,11 @@
         
         function update() {
             document.getElementById("timer").innerHTML = seconds;
-            document.getElementById("round").innerHTML = "Runde " + round + " / " + rounds.value;
+            document.getElementById("round").innerHTML = "Wiederholung " + round + " / " + rounds.value;
             
             if(phase === "work") {
                 document.body.style.background = "#198754";
-                document.getElementById("phase").innerHTML = "BELASTUNG";
+                document.getElementById("phase").innerHTML = "ÜBUNGSDAUER";
             } else {
                 document.body.style.background = "#b02a37";
                 document.getElementById("phase").innerHTML = "PAUSE";
