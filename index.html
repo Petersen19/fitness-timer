@@ -76,6 +76,7 @@
         }
         #info {
             font-size: 30px;
+            line-height: 1.8;
         }
         button {
             font-size: 22px;
@@ -132,7 +133,7 @@
         </div>
         <div id="phase" class="hidden">BEREIT</div>
         <div id="timer" class="hidden">20</div>
-        <div id="info" class="hidden">Wiederholung 1 / 20 | Satz 1 / 3</div>
+        <div id="info" class="hidden">Wiederholung 1 / 20<br>Satz 1 / 3</div>
         <button class="start" id="startBtn" onclick="startTimer()">START</button>
         <button class="pause hidden" id="pauseBtn" onclick="pauseTimer()">PAUSE</button>
         <button class="resume hidden" id="resumeBtn" onclick="resumeTimer()">FORTSETZEN</button>
@@ -213,7 +214,7 @@
         
         function update() {
             document.getElementById("timer").innerHTML = seconds;
-            document.getElementById("info").innerHTML = "Wiederholung " + round + " / " + rounds.value + " | Satz " + set + " / " + sets.value;
+            document.getElementById("info").innerHTML = "Wiederholung " + round + " / " + rounds.value + "<br>Satz " + set + " / " + sets.value;
             
             if(phase === "work") {
                 document.body.style.background = "#198754";
