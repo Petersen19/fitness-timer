@@ -51,6 +51,7 @@
             flex-direction: column;
             justify-content: center;
             background: #28a745;
+            transition: background-color 0.3s ease;
         }
         .header {
             text-align: center;
@@ -73,7 +74,6 @@
             padding: 15px;
             border-radius: 15px;
             margin-top: 20px;
-            transition: background-color 0.3s ease;
         }
         input {
             width: 80px;
@@ -203,6 +203,7 @@
         const resumeBtn = document.getElementById("resumeBtn");
         const resetBtn = document.getElementById("resetBtn");
         const settingsDiv = document.getElementById("settings");
+        const container = document.querySelector(".container");
         
         function save() {
             localStorage.setItem("work", work.value);
@@ -259,15 +260,15 @@
             
             if(phase === "work") {
                 document.body.style.background = "#28a745";
-                settingsDiv.style.background = "#28a745";
+                container.style.background = "#28a745";
                 document.getElementById("phase").innerHTML = "ÜBUNGSDAUER";
             } else if(phase === "rest") {
                 document.body.style.background = "#b02a37";
-                settingsDiv.style.background = "#b02a37";
+                container.style.background = "#b02a37";
                 document.getElementById("phase").innerHTML = "PAUSE";
             } else if(phase === "setpause") {
                 document.body.style.background = "#ff6900";
-                settingsDiv.style.background = "#ff6900";
+                container.style.background = "#ff6900";
                 document.getElementById("phase").innerHTML = "SATZPAUSE";
             }
         }
@@ -277,7 +278,7 @@
             document.getElementById("phase").innerHTML = "VORBEREITUNG";
             document.getElementById("info").innerHTML = "Training startet in...";
             document.body.style.background = "#0d6efd";
-            settingsDiv.style.background = "#0d6efd";
+            container.style.background = "#0d6efd";
         }
         
         function countdownTick() {
@@ -359,7 +360,7 @@
             trainingHeader.style.display = "block";
             topHeader.style.display = "none";
             mainHeader.classList.add("hidden");
-            settingsDiv.classList.remove("hidden");
+            settingsDiv.classList.add("hidden");
             document.getElementById("phase").classList.remove("hidden");
             document.getElementById("timer").classList.remove("hidden");
             document.getElementById("info").classList.remove("hidden");
