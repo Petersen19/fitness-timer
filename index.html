@@ -73,6 +73,7 @@
             padding: 15px;
             border-radius: 15px;
             margin-top: 20px;
+            transition: background-color 0.3s ease;
         }
         input {
             width: 80px;
@@ -358,7 +359,7 @@
             trainingHeader.style.display = "block";
             topHeader.style.display = "none";
             mainHeader.classList.add("hidden");
-            document.getElementById("settings").classList.add("hidden");
+            settingsDiv.classList.remove("hidden");
             document.getElementById("phase").classList.remove("hidden");
             document.getElementById("timer").classList.remove("hidden");
             document.getElementById("info").classList.remove("hidden");
@@ -405,7 +406,7 @@
             trainingHeader.style.display = "none";
             topHeader.style.display = "block";
             mainHeader.classList.remove("hidden");
-            document.getElementById("settings").classList.remove("hidden");
+            settingsDiv.classList.remove("hidden");
             document.getElementById("phase").classList.add("hidden");
             document.getElementById("timer").classList.add("hidden");
             document.getElementById("info").classList.add("hidden");
