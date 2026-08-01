@@ -136,7 +136,7 @@
             color: white;
         }
         .hidden {
-            display: none;
+            display: none !important;
         }
     </style>
 </head>
@@ -360,7 +360,7 @@
             trainingHeader.style.display = "block";
             topHeader.style.display = "none";
             mainHeader.classList.add("hidden");
-            settingsDiv.classList.add("hidden");
+            settingsDiv.style.display = "none";
             document.getElementById("phase").classList.remove("hidden");
             document.getElementById("timer").classList.remove("hidden");
             document.getElementById("info").classList.remove("hidden");
@@ -407,7 +407,7 @@
             trainingHeader.style.display = "none";
             topHeader.style.display = "block";
             mainHeader.classList.remove("hidden");
-            settingsDiv.classList.remove("hidden");
+            settingsDiv.style.display = "block";
             document.getElementById("phase").classList.add("hidden");
             document.getElementById("timer").classList.add("hidden");
             document.getElementById("info").classList.add("hidden");
