@@ -78,7 +78,7 @@
         }
         .settings {
             background: #28a745;
-            padding: 15px;
+            padding: 20px;
             border-radius: 15px;
             margin-top: -80px;
             margin-bottom: 40px;
@@ -90,7 +90,15 @@
             max-height: 70vh;
             overflow-y: auto;
         }
-        input {
+        .setting-row {
+            margin-bottom: 15px;
+        }
+        .setting-label {
+            font-size: 16px;
+            margin-bottom: 5px;
+            display: block;
+        }
+        input[type="number"] {
             width: 80px;
             font-size: 22px;
             text-align: center;
@@ -100,10 +108,28 @@
             font-size: 18px;
             font-weight: bold;
             color: #ffc107;
-            margin-top: 10px;
+            margin-top: 15px;
             padding: 10px;
             background: rgba(0, 0, 0, 0.2);
             border-radius: 8px;
+        }
+        .sound-toggle-main {
+            background: #17a2b8;
+            color: white;
+            font-size: 18px;
+            padding: 12px 20px;
+            border: 0;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            transition: background-color 0.3s ease;
+        }
+        .sound-toggle-main.muted {
+            background: #6c757d;
+        }
+        .sound-toggle-main:active {
+            transform: scale(0.98);
         }
         .training-header {
             position: absolute;
@@ -159,7 +185,7 @@
             background: #dc3545;
             color: white;
         }
-        .sound-toggle {
+        .sound-toggle-training {
             background: #17a2b8;
             color: white;
             font-size: 18px;
@@ -168,8 +194,11 @@
             top: 100px;
             right: 15px;
             z-index: 99;
+            border: 0;
+            border-radius: 8px;
+            cursor: pointer;
         }
-        .sound-toggle.muted {
+        .sound-toggle-training.muted {
             background: #6c757d;
         }
         .hidden {
@@ -186,31 +215,37 @@
         <h2>Fitness Timer</h2>
         <p>by Petersen19</p>
     </div>
-    <button class="sound-toggle hidden" id="soundToggle" onclick="toggleSound()">🔊 Sound AN</button>
+    <button class="sound-toggle-training hidden" id="soundToggleTraining" onclick="toggleSound()">🔊 Sound AN</button>
     <div class="container">
         <div class="header" id="mainHeader">
             <h2>Fitness Timer</h2>
             <p>by Petersen19</p>
         </div>
         <div id="settings" class="settings">
-            Übungsdauer Sekunden<br>
-            <input id="work" value="20" type="number" inputmode="numeric" onchange="calculateDuration()" oninput="calculateDuration()">
-            <br><br>
-            Pause Sekunden<br>
-            <input id="rest" value="45" type="number" inputmode="numeric" onchange="calculateDuration()" oninput="calculateDuration()">
-            <br><br>
-            Wiederholungen<br>
-            <input id="rounds" value="20" type="number" inputmode="numeric" onchange="calculateDuration()" oninput="calculateDuration()">
-            <br><br>
-            Sätze<br>
-            <input id="sets" value="3" type="number" inputmode="numeric" onchange="calculateDuration()" oninput="calculateDuration()">
-            <br><br>
-            Satzpause Sekunden<br>
-            <input id="setPause" value="60" type="number" inputmode="numeric" onchange="calculateDuration()" oninput="calculateDuration()">
-            <br><br>
+            <div class="setting-row">
+                <span class="setting-label">Übungsdauer Sekunden</span>
+                <input id="work" value="20" type="number" inputmode="numeric" onchange="calculateDuration()" oninput="calculateDuration()">
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">Pause Sekunden</span>
+                <input id="rest" value="45" type="number" inputmode="numeric" onchange="calculateDuration()" oninput="calculateDuration()">
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">Wiederholungen</span>
+                <input id="rounds" value="20" type="number" inputmode="numeric" onchange="calculateDuration()" oninput="calculateDuration()">
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">Sätze</span>
+                <input id="sets" value="3" type="number" inputmode="numeric" onchange="calculateDuration()" oninput="calculateDuration()">
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">Satzpause Sekunden</span>
+                <input id="setPause" value="60" type="number" inputmode="numeric" onchange="calculateDuration()" oninput="calculateDuration()">
+            </div>
             <div class="training-duration-display">
                 Trainingsdauer: <span id="durationDisplay">00:00</span>
             </div>
+            <button class="sound-toggle-main" id="soundToggleMain" onclick="toggleSound()">🔊 Sound AN</button>
         </div>
         <div id="phase" class="hidden">BEREIT</div>
         <div id="timer" class="hidden">20</div>
@@ -246,7 +281,8 @@
         const pauseBtn = document.getElementById("pauseBtn");
         const resumeBtn = document.getElementById("resumeBtn");
         const resetBtn = document.getElementById("resetBtn");
-        const soundToggle = document.getElementById("soundToggle");
+        const soundToggleMain = document.getElementById("soundToggleMain");
+        const soundToggleTraining = document.getElementById("soundToggleTraining");
         const settingsDiv = document.getElementById("settings");
         const container = document.querySelector(".container");
         const durationDisplay = document.getElementById("durationDisplay");
@@ -368,13 +404,15 @@
         
         function toggleSound() {
             soundEnabled = !soundEnabled;
-            if(soundEnabled) {
-                soundToggle.textContent = "🔊 Sound AN";
-                soundToggle.classList.remove("muted");
-            } else {
-                soundToggle.textContent = "🔇 Sound AUS";
-                soundToggle.classList.add("muted");
-            }
+            const newText = soundEnabled ? "🔊 Sound AN" : "🔇 Sound AUS";
+            const newClass = soundEnabled ? "" : "muted";
+            
+            // Update both buttons
+            soundToggleMain.textContent = newText;
+            soundToggleMain.className = "sound-toggle-main " + newClass;
+            
+            soundToggleTraining.textContent = newText;
+            soundToggleTraining.className = "sound-toggle-training " + newClass;
         }
         
         function buzz() {
@@ -504,7 +542,7 @@
             pauseBtn.classList.remove("hidden");
             resumeBtn.classList.add("hidden");
             resetBtn.classList.remove("hidden");
-            soundToggle.classList.remove("hidden");
+            soundToggleTraining.classList.remove("hidden");
             trainingHeader.style.display = "block";
             topHeader.style.display = "none";
             mainHeader.classList.add("hidden");
@@ -552,7 +590,7 @@
             pauseBtn.classList.add("hidden");
             resumeBtn.classList.add("hidden");
             resetBtn.classList.add("hidden");
-            soundToggle.classList.add("hidden");
+            soundToggleTraining.classList.add("hidden");
             trainingHeader.style.display = "none";
             topHeader.style.display = "block";
             mainHeader.classList.remove("hidden");
