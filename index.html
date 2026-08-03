@@ -159,6 +159,19 @@
             background: #dc3545;
             color: white;
         }
+        .sound-toggle {
+            background: #17a2b8;
+            color: white;
+            font-size: 18px;
+            padding: 12px 20px;
+            position: fixed;
+            top: 100px;
+            right: 15px;
+            z-index: 99;
+        }
+        .sound-toggle.muted {
+            background: #6c757d;
+        }
         .hidden {
             display: none !important;
         }
@@ -173,6 +186,7 @@
         <h2>Fitness Timer</h2>
         <p>by Petersen19</p>
     </div>
+    <button class="sound-toggle hidden" id="soundToggle" onclick="toggleSound()">🔊 Sound AN</button>
     <div class="container">
         <div class="header" id="mainHeader">
             <h2>Fitness Timer</h2>
@@ -217,6 +231,7 @@
         let wakeLock = null;
         let inCountdown = false;
         let countdownSeconds = 10;
+        let soundEnabled = true;
         
         const work = document.getElementById("work");
         const rest = document.getElementById("rest");
@@ -230,6 +245,7 @@
         const pauseBtn = document.getElementById("pauseBtn");
         const resumeBtn = document.getElementById("resumeBtn");
         const resetBtn = document.getElementById("resetBtn");
+        const soundToggle = document.getElementById("soundToggle");
         const settingsDiv = document.getElementById("settings");
         const container = document.querySelector(".container");
         const durationDisplay = document.getElementById("durationDisplay");
@@ -243,9 +259,6 @@
             const setPauseSeconds = parseInt(setPause.value) || 0;
             
             // Berechnung: (Übungsdauer + Pause) × Wiederholungen × Sätze + (Satzpause × (Sätze - 1))
-            // Für jeden Satz: (Übungsdauer + Pause) × Wiederholungen - Pause (letzte Pause zählt nicht)
-            // = (Übungsdauer × Wiederholungen) + (Pause × (Wiederholungen - 1))
-            
             let durationPerSet = (workSeconds * numRounds) + (restSeconds * (numRounds - 1));
             let totalDuration = (durationPerSet * numSets) + (setPauseSeconds * (numSets - 1));
             
@@ -278,10 +291,20 @@
         load();
         
         function say(text) {
-            if("speechSynthesis" in window) {
-                let s = new SpeechSynthesisUtterance(text);
-                s.lang = "de-DE";
-                speechSynthesis.speak(s);
+            if(!soundEnabled || !"speechSynthesis" in window) return;
+            let s = new SpeechSynthesisUtterance(text);
+            s.lang = "en-US";
+            speechSynthesis.speak(s);
+        }
+        
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            if(soundEnabled) {
+                soundToggle.textContent = "🔊 Sound AN";
+                soundToggle.classList.remove("muted");
+            } else {
+                soundToggle.textContent = "🔇 Sound AUS";
+                soundToggle.classList.add("muted");
             }
         }
         
@@ -338,15 +361,15 @@
         function countdownTick() {
             countdownSeconds--;
             if(countdownSeconds > 0) {
-                if(countdownSeconds <= 5) {
-                    say(countdownSeconds);
+                if(countdownSeconds <= 3) {
+                    say(countdownSeconds.toString());
                 }
                 updateCountdown();
             } else {
                 clearInterval(timer);
                 inCountdown = false;
                 buzz();
-                say("Los");
+                say("start");
                 phase = "work";
                 seconds = parseInt(work.value);
                 update();
@@ -356,8 +379,8 @@
         
         function countDown() {
             seconds--;
-            if(seconds <= 5 && seconds > 0) {
-                say(seconds);
+            if(seconds <= 3 && seconds > 0) {
+                say(seconds.toString());
             }
             if(seconds <= 0) {
                 buzz();
@@ -366,36 +389,36 @@
                     if(round >= parseInt(rounds.value)) {
                         // Satz fertig
                         if(set >= parseInt(sets.value)) {
-                            // Alle Sätze fertig
+                            // Alle Sätze fertig - allerletzte Belastung
+                            say("finish");
                             stopTimer();
-                            say("Training beendet");
                             document.getElementById("phase").innerHTML = "FERTIG";
                             return;
                         } else {
-                            // Satzpause
+                            // Letzte Belastung vor Satzpause
+                            say("break");
                             phase = "setpause";
                             seconds = parseInt(setPause.value);
-                            say("Satzpause");
                             round = 1;
                         }
                     } else {
-                        // Nächste Wiederholung
+                        // Normale Belastung beendet - Pause folgt
+                        say("stop");
                         phase = "rest";
                         seconds = parseInt(rest.value);
-                        say("Pause");
                     }
                 } else if(phase === "rest") {
                     // Nach Pause: nächste Wiederholung
+                    say("go");
                     round++;
                     phase = "work";
                     seconds = parseInt(work.value);
-                    say("Los");
                 } else if(phase === "setpause") {
                     // Nach Satzpause: nächster Satz
+                    say("start");
                     set++;
                     phase = "work";
                     seconds = parseInt(work.value);
-                    say("Los");
                 }
             }
             update();
@@ -411,6 +434,7 @@
             pauseBtn.classList.remove("hidden");
             resumeBtn.classList.add("hidden");
             resetBtn.classList.remove("hidden");
+            soundToggle.classList.remove("hidden");
             trainingHeader.style.display = "block";
             topHeader.style.display = "none";
             mainHeader.classList.add("hidden");
@@ -458,6 +482,7 @@
             pauseBtn.classList.add("hidden");
             resumeBtn.classList.add("hidden");
             resetBtn.classList.add("hidden");
+            soundToggle.classList.add("hidden");
             trainingHeader.style.display = "none";
             topHeader.style.display = "block";
             mainHeader.classList.remove("hidden");
