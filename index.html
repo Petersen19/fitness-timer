@@ -232,6 +232,8 @@
         let inCountdown = false;
         let countdownSeconds = 10;
         let soundEnabled = true;
+        let utteranceQueue = [];
+        let isUtteranceSpeaking = false;
         
         const work = document.getElementById("work");
         const rest = document.getElementById("rest");
@@ -292,9 +294,49 @@
         
         function say(text) {
             if(!soundEnabled || !"speechSynthesis" in window) return;
-            let s = new SpeechSynthesisUtterance(text);
-            s.lang = "en-US";
-            speechSynthesis.speak(s);
+            
+            // Cancel all pending utterances
+            speechSynthesis.cancel();
+            
+            // Create new utterance with optimized settings for Safari/iOS
+            let utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = "en-US";
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            
+            // Get available voices (important for Safari)
+            let voices = speechSynthesis.getVoices();
+            if(voices.length > 0) {
+                // Prefer English voice
+                let englishVoice = voices.find(voice => voice.lang.includes('en'));
+                if(englishVoice) {
+                    utterance.voice = englishVoice;
+                } else {
+                    utterance.voice = voices[0];
+                }
+            }
+            
+            utterance.onend = function() {
+                isUtteranceSpeaking = false;
+                processQueue();
+            };
+            
+            utterance.onerror = function(event) {
+                console.error("Speech synthesis error:", event.error);
+                isUtteranceSpeaking = false;
+                processQueue();
+            };
+            
+            isUtteranceSpeaking = true;
+            speechSynthesis.speak(utterance);
+        }
+        
+        function processQueue() {
+            if(utteranceQueue.length > 0 && !isUtteranceSpeaking) {
+                let nextText = utteranceQueue.shift();
+                say(nextText);
+            }
         }
         
         function toggleSound() {
@@ -305,6 +347,7 @@
             } else {
                 soundToggle.textContent = "🔇 Sound AUS";
                 soundToggle.classList.add("muted");
+                speechSynthesis.cancel();
             }
         }
         
@@ -490,7 +533,15 @@
             document.getElementById("phase").classList.add("hidden");
             document.getElementById("timer").classList.add("hidden");
             document.getElementById("info").classList.add("hidden");
+            speechSynthesis.cancel();
             update();
+        }
+        
+        // Starte getVoices Initialisierung für Safari
+        if(speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = function() {
+                speechSynthesis.getVoices();
+            };
         }
         
         seconds = parseInt(work.value);
