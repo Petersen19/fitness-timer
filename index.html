@@ -232,8 +232,7 @@
         let inCountdown = false;
         let countdownSeconds = 10;
         let soundEnabled = true;
-        let utteranceQueue = [];
-        let isUtteranceSpeaking = false;
+        let audioContext = null;
         
         const work = document.getElementById("work");
         const rest = document.getElementById("rest");
@@ -251,6 +250,81 @@
         const settingsDiv = document.getElementById("settings");
         const container = document.querySelector(".container");
         const durationDisplay = document.getElementById("durationDisplay");
+        
+        // Initialize AudioContext
+        function initAudioContext() {
+            if(!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if(audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            return audioContext;
+        }
+        
+        // Play a beep tone
+        function playBeep(frequency, duration) {
+            if(!soundEnabled) return;
+            
+            try {
+                let ctx = initAudioContext();
+                let oscillator = ctx.createOscillator();
+                let gainNode = ctx.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+                
+                oscillator.start(ctx.currentTime);
+                oscillator.stop(ctx.currentTime + duration);
+            } catch(e) {
+                console.error("Audio error:", e);
+            }
+        }
+        
+        // Countdown: 3, 2, 1 - ein kurzer Pieps für jede Zahl
+        function playCountdown(number) {
+            if(!soundEnabled) return;
+            playBeep(800, 0.1); // Kurzer Pieps
+        }
+        
+        // Start: 1 längerer höherer Pieps
+        function playStart() {
+            if(!soundEnabled) return;
+            playBeep(1000, 0.3); // Höherer, längerer Ton
+        }
+        
+        // Go: 1 längerer höherer Pieps
+        function playGo() {
+            if(!soundEnabled) return;
+            playBeep(1000, 0.3); // Höherer, längerer Ton
+        }
+        
+        // Stop: 1 längerer tieferer Pieps
+        function playStop() {
+            if(!soundEnabled) return;
+            playBeep(400, 0.3); // Tieferer, längerer Ton
+        }
+        
+        // Break: 2 längere Pieps
+        function playBreak() {
+            if(!soundEnabled) return;
+            playBeep(600, 0.25); // Erster längerer Ton
+            setTimeout(() => playBeep(600, 0.25), 300); // Zweiter längerer Ton
+        }
+        
+        // Finish: mehrere höhere Pieps
+        function playFinish() {
+            if(!soundEnabled) return;
+            for(let i = 0; i < 3; i++) {
+                setTimeout(() => playBeep(1200, 0.15), i * 200);
+            }
+        }
         
         function calculateDuration() {
             // Werte auslesen
@@ -292,53 +366,6 @@
         
         load();
         
-        function say(text) {
-            if(!soundEnabled || !"speechSynthesis" in window) return;
-            
-            // Cancel all pending utterances
-            speechSynthesis.cancel();
-            
-            // Create new utterance with optimized settings for Safari/iOS
-            let utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = "en-US";
-            utterance.rate = 1.0;
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-            
-            // Get available voices (important for Safari)
-            let voices = speechSynthesis.getVoices();
-            if(voices.length > 0) {
-                // Prefer English voice
-                let englishVoice = voices.find(voice => voice.lang.includes('en'));
-                if(englishVoice) {
-                    utterance.voice = englishVoice;
-                } else {
-                    utterance.voice = voices[0];
-                }
-            }
-            
-            utterance.onend = function() {
-                isUtteranceSpeaking = false;
-                processQueue();
-            };
-            
-            utterance.onerror = function(event) {
-                console.error("Speech synthesis error:", event.error);
-                isUtteranceSpeaking = false;
-                processQueue();
-            };
-            
-            isUtteranceSpeaking = true;
-            speechSynthesis.speak(utterance);
-        }
-        
-        function processQueue() {
-            if(utteranceQueue.length > 0 && !isUtteranceSpeaking) {
-                let nextText = utteranceQueue.shift();
-                say(nextText);
-            }
-        }
-        
         function toggleSound() {
             soundEnabled = !soundEnabled;
             if(soundEnabled) {
@@ -347,7 +374,6 @@
             } else {
                 soundToggle.textContent = "🔇 Sound AUS";
                 soundToggle.classList.add("muted");
-                speechSynthesis.cancel();
             }
         }
         
@@ -405,14 +431,14 @@
             countdownSeconds--;
             if(countdownSeconds > 0) {
                 if(countdownSeconds <= 3) {
-                    say(countdownSeconds.toString());
+                    playCountdown(countdownSeconds);
                 }
                 updateCountdown();
             } else {
                 clearInterval(timer);
                 inCountdown = false;
                 buzz();
-                say("start");
+                playStart();
                 phase = "work";
                 seconds = parseInt(work.value);
                 update();
@@ -423,7 +449,7 @@
         function countDown() {
             seconds--;
             if(seconds <= 3 && seconds > 0) {
-                say(seconds.toString());
+                playCountdown(seconds);
             }
             if(seconds <= 0) {
                 buzz();
@@ -433,32 +459,32 @@
                         // Satz fertig
                         if(set >= parseInt(sets.value)) {
                             // Alle Sätze fertig - allerletzte Belastung
-                            say("finish");
+                            playFinish();
                             stopTimer();
                             document.getElementById("phase").innerHTML = "FERTIG";
                             return;
                         } else {
                             // Letzte Belastung vor Satzpause
-                            say("break");
+                            playBreak();
                             phase = "setpause";
                             seconds = parseInt(setPause.value);
                             round = 1;
                         }
                     } else {
                         // Normale Belastung beendet - Pause folgt
-                        say("stop");
+                        playStop();
                         phase = "rest";
                         seconds = parseInt(rest.value);
                     }
                 } else if(phase === "rest") {
                     // Nach Pause: nächste Wiederholung
-                    say("go");
+                    playGo();
                     round++;
                     phase = "work";
                     seconds = parseInt(work.value);
                 } else if(phase === "setpause") {
                     // Nach Satzpause: nächster Satz
-                    say("start");
+                    playStart();
                     set++;
                     phase = "work";
                     seconds = parseInt(work.value);
@@ -473,6 +499,7 @@
             running = true;
             paused = false;
             keepScreenOn();
+            initAudioContext();
             startBtn.classList.add("hidden");
             pauseBtn.classList.remove("hidden");
             resumeBtn.classList.add("hidden");
@@ -533,15 +560,7 @@
             document.getElementById("phase").classList.add("hidden");
             document.getElementById("timer").classList.add("hidden");
             document.getElementById("info").classList.add("hidden");
-            speechSynthesis.cancel();
             update();
-        }
-        
-        // Starte getVoices Initialisierung für Safari
-        if(speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = function() {
-                speechSynthesis.getVoices();
-            };
         }
         
         seconds = parseInt(work.value);
