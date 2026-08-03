@@ -113,7 +113,7 @@
         .sound-toggle-main {
             background: #17a2b8;
             color: white;
-            font-size: 15px;
+            font-size: 20px;
             padding: 10px 15px;
             border: 0;
             border-radius: 8px;
@@ -185,8 +185,8 @@
         .sound-toggle-training {
             background: #17a2b8;
             color: white;
-            font-size: 18px;
-            padding: 12px 20px;
+            font-size: 20px;
+            padding: 12px 16px;
             position: fixed;
             top: 100px;
             right: 15px;
@@ -212,7 +212,7 @@
         <h2>Fitness Timer</h2>
         <p>by Petersen19</p>
     </div>
-    <button class="sound-toggle-training hidden" id="soundToggleTraining" onclick="toggleSound()">🔊 Sound AN</button>
+    <button class="sound-toggle-training hidden" id="soundToggleTraining" onclick="toggleSound()">🔊</button>
     <div class="container">
         <div class="header" id="mainHeader">
             <h2>Fitness Timer</h2>
@@ -242,7 +242,7 @@
             <div class="training-duration-display">
                 Trainingsdauer: <span id="durationDisplay">00:00</span>
             </div>
-            <button class="sound-toggle-main" id="soundToggleMain" onclick="toggleSound()">🔊 Sound AN</button>
+            <button class="sound-toggle-main" id="soundToggleMain" onclick="toggleSound()">🔊</button>
         </div>
         <div id="phase" class="hidden">BEREIT</div>
         <div id="timer" class="hidden">20</div>
@@ -401,15 +401,11 @@
         
         function toggleSound() {
             soundEnabled = !soundEnabled;
-            const newText = soundEnabled ? "🔊 Sound AN" : "🔇 Sound AUS";
-            const newClass = soundEnabled ? "" : "muted";
+            const newText = soundEnabled ? "🔊" : "🔇";
             
             // Update both buttons
             soundToggleMain.textContent = newText;
-            soundToggleMain.className = "sound-toggle-main " + newClass;
-            
             soundToggleTraining.textContent = newText;
-            soundToggleTraining.className = "sound-toggle-training " + newClass;
         }
         
         function buzz() {
