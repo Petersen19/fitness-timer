@@ -87,12 +87,23 @@
             max-width: 300px;
             margin-left: auto;
             margin-right: auto;
+            max-height: 70vh;
+            overflow-y: auto;
         }
         input {
             width: 80px;
             font-size: 22px;
             text-align: center;
             padding: 8px;
+        }
+        .training-duration-display {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffc107;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
         }
         .training-header {
             position: absolute;
@@ -169,19 +180,23 @@
         </div>
         <div id="settings" class="settings">
             Übungsdauer Sekunden<br>
-            <input id="work" value="20" type="number" inputmode="numeric">
+            <input id="work" value="20" type="number" inputmode="numeric" onchange="calculateDuration()" oninput="calculateDuration()">
             <br><br>
             Pause Sekunden<br>
-            <input id="rest" value="45" type="number" inputmode="numeric">
+            <input id="rest" value="45" type="number" inputmode="numeric" onchange="calculateDuration()" oninput="calculateDuration()">
             <br><br>
             Wiederholungen<br>
-            <input id="rounds" value="20" type="number" inputmode="numeric">
+            <input id="rounds" value="20" type="number" inputmode="numeric" onchange="calculateDuration()" oninput="calculateDuration()">
             <br><br>
             Sätze<br>
-            <input id="sets" value="3" type="number" inputmode="numeric">
+            <input id="sets" value="3" type="number" inputmode="numeric" onchange="calculateDuration()" oninput="calculateDuration()">
             <br><br>
             Satzpause Sekunden<br>
-            <input id="setPause" value="60" type="number" inputmode="numeric">
+            <input id="setPause" value="60" type="number" inputmode="numeric" onchange="calculateDuration()" oninput="calculateDuration()">
+            <br><br>
+            <div class="training-duration-display">
+                Trainingsdauer: <span id="durationDisplay">00:00</span>
+            </div>
         </div>
         <div id="phase" class="hidden">BEREIT</div>
         <div id="timer" class="hidden">20</div>
@@ -217,6 +232,31 @@
         const resetBtn = document.getElementById("resetBtn");
         const settingsDiv = document.getElementById("settings");
         const container = document.querySelector(".container");
+        const durationDisplay = document.getElementById("durationDisplay");
+        
+        function calculateDuration() {
+            // Werte auslesen
+            const workSeconds = parseInt(work.value) || 0;
+            const restSeconds = parseInt(rest.value) || 0;
+            const numRounds = parseInt(rounds.value) || 0;
+            const numSets = parseInt(sets.value) || 0;
+            const setPauseSeconds = parseInt(setPause.value) || 0;
+            
+            // Berechnung: (Übungsdauer + Pause) × Wiederholungen × Sätze + (Satzpause × (Sätze - 1))
+            // Für jeden Satz: (Übungsdauer + Pause) × Wiederholungen - Pause (letzte Pause zählt nicht)
+            // = (Übungsdauer × Wiederholungen) + (Pause × (Wiederholungen - 1))
+            
+            let durationPerSet = (workSeconds * numRounds) + (restSeconds * (numRounds - 1));
+            let totalDuration = (durationPerSet * numSets) + (setPauseSeconds * (numSets - 1));
+            
+            // In Minuten und Sekunden umwandeln
+            const minutes = Math.floor(totalDuration / 60);
+            const secs = totalDuration % 60;
+            
+            // Format: MM:SS
+            const formattedDuration = String(minutes).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+            durationDisplay.textContent = formattedDuration;
+        }
         
         function save() {
             localStorage.setItem("work", work.value);
@@ -232,6 +272,7 @@
             if(localStorage.rounds) rounds.value = localStorage.rounds;
             if(localStorage.sets) sets.value = localStorage.sets;
             if(localStorage.setPause) setPause.value = localStorage.setPause;
+            calculateDuration();
         }
         
         load();
