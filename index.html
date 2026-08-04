@@ -262,7 +262,7 @@
         let timer = null;
         let wakeLock = null;
         let inCountdown = false;
-        let countdownSeconds = 5;
+        let countdownSeconds = 10;
         let soundEnabled = true;
         let audioContext = null;
         
@@ -461,6 +461,7 @@
         function countdownTick() {
             countdownSeconds--;
             if(countdownSeconds > 0) {
+                // Pieps in den letzten 5 Sekunden (5, 4, 3, 2, 1)
                 if(countdownSeconds <= 5) {
                     playCountdownBeep();
                 }
@@ -544,7 +545,7 @@
             document.getElementById("timer").classList.remove("hidden");
             document.getElementById("info").classList.remove("hidden");
             inCountdown = true;
-            countdownSeconds = 5;
+            countdownSeconds = 10;
             updateCountdown();
             timer = setInterval(countdownTick, 1000);
         }
