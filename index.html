@@ -59,6 +59,7 @@
             padding-top: 100px;
             box-sizing: border-box;
             overflow-y: auto;
+            padding-bottom: 100px;
         }
         .header {
             text-align: center;
@@ -198,6 +199,25 @@
         .sound-toggle-training.muted {
             background: #6c757d;
         }
+        .training-progress {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            text-align: center;
+            z-index: 99;
+            display: none;
+        }
+        .training-progress.visible {
+            display: block;
+        }
+        .training-progress-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffc107;
+        }
         .hidden {
             display: none !important;
         }
@@ -213,6 +233,9 @@
         <p>by Petersen19</p>
     </div>
     <button class="sound-toggle-training hidden" id="soundToggleTraining" onclick="toggleSound()">🔊</button>
+    <div class="training-progress" id="trainingProgress">
+        <div class="training-progress-text">Gesamtdauer: <span id="totalTimeRemaining">00:00</span></div>
+    </div>
     <div class="container">
         <div class="header" id="mainHeader">
             <h2>Fitness Timer</h2>
@@ -265,6 +288,8 @@
         let countdownSeconds = 10;
         let soundEnabled = true;
         let audioContext = null;
+        let totalTrainingSeconds = 0;
+        let elapsedSeconds = 0;
         
         const work = document.getElementById("work");
         const rest = document.getElementById("rest");
@@ -283,6 +308,8 @@
         const settingsDiv = document.getElementById("settings");
         const container = document.querySelector(".container");
         const durationDisplay = document.getElementById("durationDisplay");
+        const trainingProgress = document.getElementById("trainingProgress");
+        const totalTimeRemaining = document.getElementById("totalTimeRemaining");
         
         // Initialize AudioContext
         function initAudioContext() {
@@ -378,6 +405,16 @@
             // Format: MM:SS
             const formattedDuration = String(minutes).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
             durationDisplay.textContent = formattedDuration;
+            
+            totalTrainingSeconds = totalDuration;
+        }
+        
+        function updateTrainingProgress() {
+            const remaining = totalTrainingSeconds - elapsedSeconds;
+            const minutes = Math.floor(remaining / 60);
+            const secs = remaining % 60;
+            const formattedTime = String(minutes).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+            totalTimeRemaining.textContent = formattedTime;
         }
         
         function save() {
@@ -473,13 +510,18 @@
                 playStart();
                 phase = "work";
                 seconds = parseInt(work.value);
+                elapsedSeconds = 0;
                 update();
+                updateTrainingProgress();
                 timer = setInterval(countDown, 1000);
             }
         }
         
         function countDown() {
             seconds--;
+            elapsedSeconds++;
+            updateTrainingProgress();
+            
             if(seconds <= 5 && seconds > 0) {
                 playCountdownBeep();
             }
@@ -537,6 +579,7 @@
             resumeBtn.classList.add("hidden");
             resetBtn.classList.remove("hidden");
             soundToggleTraining.classList.remove("hidden");
+            trainingProgress.classList.add("visible");
             trainingHeader.style.display = "block";
             topHeader.style.display = "none";
             mainHeader.classList.add("hidden");
@@ -546,7 +589,9 @@
             document.getElementById("info").classList.remove("hidden");
             inCountdown = true;
             countdownSeconds = 10;
+            elapsedSeconds = 0;
             updateCountdown();
+            updateTrainingProgress();
             timer = setInterval(countdownTick, 1000);
         }
         
@@ -580,11 +625,13 @@
             seconds = parseInt(work.value);
             inCountdown = false;
             paused = false;
+            elapsedSeconds = 0;
             startBtn.classList.remove("hidden");
             pauseBtn.classList.add("hidden");
             resumeBtn.classList.add("hidden");
             resetBtn.classList.add("hidden");
             soundToggleTraining.classList.add("hidden");
+            trainingProgress.classList.remove("visible");
             trainingHeader.style.display = "none";
             topHeader.style.display = "block";
             mainHeader.classList.remove("hidden");
